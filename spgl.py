@@ -60,7 +60,8 @@ KEY_F9 = "F9"
 KEY_F10 = "F10"
 KEY_F11 = "F11"
 KEY_F12 = "F12"
-
+KEY_D = "d"
+KEY_U = "u"
 # Game Class
 class Game(object):
 
