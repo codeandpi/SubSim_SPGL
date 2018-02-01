@@ -11,19 +11,19 @@ import random
 # Create Classes
 class Player(spgl.Sprite):
     depth = 100
+    rudder = 0
 
     def __init__(self, shape, color, x, y):
 
         spgl.Sprite.__init__(self, shape, color, x, y)
-        self.speed = 3
+        self.speed = 1
         # self.score = 0
         self.pendown()
         self.pencolor('yellow')
         self.setheading(90)
         self.heading = 90
         self.position()
-        self.rudder = 10 # default rudder setting
-
+        self.rudder = 0 # default rudder setting
 
     def tick(self):
         self.move()
@@ -51,14 +51,22 @@ class Player(spgl.Sprite):
      is constantly added to the heading until the wheel is set to amidships.  Would 
      also like to see the label updated to show how much rudder is set"""
 
+
+
+
+
+
+    def set_rudder(self):# Key binding "r"
+        self.rudder += 5
+
+    def set_amidshps(self):# Key binding "a"
+        self.rudder = 0
+
     def rotate_left(self):
         self.heading -= self.rudder
         self.lt(self.rudder)
         if self.heading < 0:
             self.heading += 360
-
-    # This keypress will alter the course to Stb by using the default rudder
-    # value of 5 degrees per press.
 
     def rotate_right(self):
         self.heading += self.rudder
@@ -67,35 +75,46 @@ class Player(spgl.Sprite):
             self.heading -= 360
 
     def accelerate(self):
+        if self.speed == 0.1:
+            self.speed = 1
         self.speed += 1
 
     def decelerate(self):
         self.speed -= 1
         if self.speed < 1:
-            self.speed = 0.5
+            self.speed = 0.1
 
+    def change_course(self):  # Key binding "c"
 
+        while True:
+
+            self.heading -= self.rudder
+            self.lt(self.rudder)
+
+            if self.heading < 0:
+                self.heading += 360
+
+            break
 # Create Functions
 
     def depth_up(self):
-        """ The depth up function """
         Player.depth -= 50
         if Player.depth < 0:
             Player.depth = 0
 
     def depth_down(self):
-        """ The depth down function, this needs to include some check
-        for the crush depth and seabed """
         Player.depth += 50
+
 
 class Enemy(spgl.Sprite):
     depth = 150
+
     def __init__(self, shape, color, x, y):
         spgl.Sprite.__init__(self, shape, color, x, y)
         self.speed = 2
         self.setheading(180)
         self.heading = 180
-        self.rudder = 30
+        self.rudder = 10
         self.depth = 100
         self.name = "Crazy Ivan"
         self.pendown()
@@ -114,8 +133,8 @@ class Enemy(spgl.Sprite):
         elif coin == 1:
             pass
 
-
-        # Wrap back to the other side of the screen
+        """ Wrap back to the other side of the screen.  Not sure I like this as the wrap at top 
+         corners looks silly.  My just drop the contact when  the go off screen"""
         if self.xcor() > game.SCREEN_WIDTH / 2:
             self.goto(-game.SCREEN_WIDTH / 2, self.ycor())
             self.clear()
@@ -131,13 +150,13 @@ class Enemy(spgl.Sprite):
 
     def rotate_left(self):
         self.heading -= self.rudder
-        self.lt(90)
+        self.lt(self.rudder)
         if self.heading < 0:
             self.heading += 360
 
     def rotate_right(self):
         self.heading += self.rudder
-        self.rt(90)
+        self.rt(self.rudder)
         if self.heading > 360:
             self.heading -= 360
 
@@ -161,30 +180,39 @@ class Enemy(spgl.Sprite):
 
 
 # Initial Game setup
-game = spgl.Game(1200, 1200, "black", "SPGL Minimum Code Example by /u/wynand1004 AKA @TokyoEdTech",splash_time=3)
+game = spgl.Game(2500, 1200, "black", "SPGL Minimum Code Example by /u/wynand1004 AKA @TokyoEdTech",splash_time=3)
 heading = Player.heading
-#position = Player.position
 depth = Player.depth
 enemy_heading = Enemy.heading
+rudder = Player.rudder
 
 # Create Sprites
 # Create Enemy
 enemy = Enemy("square", "brown", 300, 500)
 # Create Player
-player = Player("triangle", "white", 0, 0)
+player = Player("triangle", "white", -game.SCREEN_WIDTH / 2 , game.SCREEN_HEIGHT / 2 -1000)
 
 # Create Labels
-navigation_label = spgl.Label("Current: \nHeading: Heading: {}".format(Player.heading), "Green", -550, 450)
-orders_label = spgl.Label("Ordered: \nHeading:  {}".format(heading), "Yellow",400, 450)
-tracking_label = spgl.Label("Contact Data: \nHeading: Heading  {}".format(Enemy.heading), "Red", -400, -450)
+
+navigation_label = spgl.Label("Current: \nHeading: Heading: {}".format(Player.heading), "Green"
+                              , -game.SCREEN_WIDTH / 2 + 10, game.SCREEN_HEIGHT / 2 - 100)
+
+tracking_label = spgl.Label("Contact Data: \nHeading: Heading  {}".format(Enemy.heading), "Red", -game.SCREEN_WIDTH
+                            /2 + 10, game.SCREEN_HEIGHT / 2 - 300)
 # Create Buttons
 
 
 # Set Keyboard Bindings
 game.set_keyboard_binding(spgl.KEY_UP, player.accelerate)
 game.set_keyboard_binding(spgl.KEY_DOWN, player.decelerate)
+
 game.set_keyboard_binding(spgl.KEY_LEFT, player.rotate_left)
 game.set_keyboard_binding(spgl.KEY_RIGHT, player.rotate_right)
+game.set_keyboard_binding(spgl.KEY_C, player.change_course)
+game.set_keyboard_binding(spgl.KEY_R, player.set_rudder)
+game.set_keyboard_binding(spgl.KEY_A, player.set_amidshps)
+#game.set_keyboard_binding(spgl.KEY_S, player.set_course)
+
 
 game.set_keyboard_binding(spgl.KEY_U, player.depth_up)
 game.set_keyboard_binding(spgl.KEY_D, player.depth_down)
@@ -195,26 +223,32 @@ while True:
     # Call the game tick method
     game.tick()
 
-
-    # position_string = str(player.pos())
-    # speed_string = "-" * int(player.speed)
+    player.change_course()
 
     speed_string2 = str(player.speed)
     heading_string = int(player.heading)
     enemy_speed_string = str(enemy.speed)
     enemy_heading = int(enemy.heading)
-    #navigation_label.update(" Current: \n Position:{} \n Depth:{} \n Speed:{} \n Heading:{}"
-                            #.format(position_string, Player.depth, speed_string2, heading_string))
+    rudder = int(player.rudder)
 
-    navigation_label.update(" Current:  \n Depth:{} \n Speed:{} \n Heading:{}"
-                            .format(Player.depth, speed_string2, heading_string))
-    orders_label.update(" Ordered: \n Depth:{} \n Speed:{} \n Heading:{}"
-                        .format(Player.depth, speed_string2, heading_string))
-
+    navigation_label.update(" Current:  \n Depth:{} \n Speed:{} \n Heading:{} \n Rudder:{} "
+                            .format(Player.depth, speed_string2, heading_string, rudder))
     tracking_label.update(" Contact Data: \n Depth:{} \n Speed:{} \n Heading:{}"
                         .format(Enemy.depth, enemy_speed_string, enemy_heading))
 
-    # show game info in terminal
+# show game info in terminal
 
-    game.clear_terminal_screen()
-    game.print_game_info()
+#game.clear_terminal_screen()
+# game.print_game_info()
+
+# Tried but not used stuff
+# position_string = str(player.pos())
+# speed_string = "-" * int(player.speed)
+# orders_label.update(" Ordered: \n Depth:{} \n Speed:{} \n Heading:{} \n Rudder:{} "
+# .format(Player.depth, speed_string2, heading_string, rudder))
+
+#navigation_label.update(" Current: \n Position:{} \n Depth:{} \n Speed:{} \n Heading:{}"
+#.format(position_string, Player.depth, speed_string2, heading_string))
+
+#orders_label = spgl.Label("Ordered: \nHeading:  {}".format(heading), "Yellow"
+                          #,-game.SCREEN_WIDTH / 2 + 10, game.SCREEN_HEIGHT / 2 - 200)

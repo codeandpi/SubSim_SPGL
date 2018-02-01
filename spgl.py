@@ -60,7 +60,11 @@ KEY_F9 = "F9"
 KEY_F10 = "F10"
 KEY_F11 = "F11"
 KEY_F12 = "F12"
+KEY_A = "a"
+KEY_C = "c"
 KEY_D = "d"
+KEY_R = "r"
+KEY_S = "s"
 KEY_U = "u"
 # Game Class
 class Game(object):
@@ -440,7 +444,7 @@ class Label(turtle.Turtle):
                 x = 0,
                 y = 0,
                 font_name = "Arial",
-                font_size = 18,
+                font_size = 12,
                 font_type = "normal",
                 align = "left"):
 
