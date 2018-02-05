@@ -239,7 +239,6 @@ while True:
     # player.desired_knots()
     # player.change_course()
 
-
     vx = enemy.xcor() - player.xcor()
     if vx == 0:
         vx = 0.01
