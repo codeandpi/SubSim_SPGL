@@ -7,11 +7,16 @@
 import spgl
 import math
 import random
+import time
 
+rudder_multiplier = 4
 # Create Classes
 class Player(spgl.Sprite):
     depth = 100
     rudder = 0
+    desired_speed = 0
+    max_speed = 30
+    min_speed = .1
 
     def __init__(self, shape, color, x, y):
 
@@ -23,7 +28,7 @@ class Player(spgl.Sprite):
         self.setheading(90)
         self.heading = 90
         self.position()
-        self.rudder = 0 # default rudder setting
+        self.rudder = 0 # default rudder setting should remain at 0 at game start
 
     def tick(self):
         self.move()
@@ -51,28 +56,46 @@ class Player(spgl.Sprite):
      is constantly added to the heading until the wheel is set to amidships.  Would 
      also like to see the label updated to show how much rudder is set"""
 
+    # Key binding "c".
+    # This produces a reasonable turning circle though not sure on its accuracy
+    def change_course(self):
 
+        while self.rudder != 0 :
+            self.heading -= self.rudder / rudder_multiplier
+            self.lt(self.rudder / rudder_multiplier)
+            if self.heading < 0:
+                self.heading += 360
 
+            break
 
-
-
-    def set_rudder(self):# Key binding "r"
+    # Key binding "r"
+    # This changes the setting of the rudder by 5 degrees each press
+    def set_rudder(self):
         self.rudder += 5
 
-    def set_amidshps(self):# Key binding "a"
+    # Key binding "a"
+    # This sets the rudder back to zero ie 'Wheel amidships'
+    def set_amidshps(self):
         self.rudder = 0
 
     def rotate_left(self):
-        self.heading -= self.rudder
-        self.lt(self.rudder)
-        if self.heading < 0:
-            self.heading += 360
+
+            self.heading -= self.rudder / rudder_multiplier
+            self.lt(self.rudder / rudder_multiplier)
+            if self.heading < 0:
+                self.heading += 360
+
+
 
     def rotate_right(self):
-        self.heading += self.rudder
-        self.rt(self.rudder)
-        if self.heading > 360:
-            self.heading -= 360
+
+            self.heading += self.rudder / rudder_multiplier
+            self.rt(self.rudder / rudder_multiplier)
+            if self.heading > 360:
+                self.heading -= 360
+
+
+
 
     def accelerate(self):
         if self.speed == 0.1:
@@ -84,17 +107,7 @@ class Player(spgl.Sprite):
         if self.speed < 1:
             self.speed = 0.1
 
-    def change_course(self):  # Key binding "c"
 
-        while True:
-
-            self.heading -= self.rudder
-            self.lt(self.rudder)
-
-            if self.heading < 0:
-                self.heading += 360
-
-            break
 # Create Functions
 
     def depth_up(self):
@@ -105,13 +118,23 @@ class Player(spgl.Sprite):
     def depth_down(self):
         Player.depth += 50
 
+    def desired_knots(self):
 
+        self.desired_speed += 1
+        if self.desired_speed > self.max_speed:
+            self.desired_speed = self.max_speed
+        if self.desired_speed < self.min_speed:
+            self.desired_speed = self.min_speed
+        if self .desired_speed > self.speed:
+            self.speed += 0.45
+            if self.speed > self.desired_speed:
+                self.speed = self.desired_speed
 class Enemy(spgl.Sprite):
     depth = 150
 
     def __init__(self, shape, color, x, y):
         spgl.Sprite.__init__(self, shape, color, x, y)
-        self.speed = 2
+        self.speed = 0
         self.setheading(180)
         self.heading = 180
         self.rudder = 10
@@ -126,12 +149,12 @@ class Enemy(spgl.Sprite):
     def move(self):
         self.fd(self.speed)
 
-        # Calls crazy ivan random maneuvers though would like it to be more random
-        coin = random.randrange(0, 100)
-        if coin == 0:  # heads
-            self.crazy_ivan()
-        elif coin == 1:
-            pass
+        #Calls crazy ivan random maneuvers though would like it to be more random
+        #coin = random.randrange(0, 100)
+        #if coin == 0:  # heads
+                # self.crazy_ivan()
+        #elif coin == 1:
+            #pass
 
         """ Wrap back to the other side of the screen.  Not sure I like this as the wrap at top 
          corners looks silly.  My just drop the contact when  the go off screen"""
@@ -148,17 +171,6 @@ class Enemy(spgl.Sprite):
             self.goto(self.xcor(), game.SCREEN_HEIGHT / 2)
             self.clear()
 
-    def rotate_left(self):
-        self.heading -= self.rudder
-        self.lt(self.rudder)
-        if self.heading < 0:
-            self.heading += 360
-
-    def rotate_right(self):
-        self.heading += self.rudder
-        self.rt(self.rudder)
-        if self.heading > 360:
-            self.heading -= 360
 
     def crazy_ivan(self):
     # This does a random# change of course leaping 30 degrees left or right off original course
@@ -185,12 +197,14 @@ heading = Player.heading
 depth = Player.depth
 enemy_heading = Enemy.heading
 rudder = Player.rudder
+desired = Player.desired_speed
 
 # Create Sprites
 # Create Enemy
-enemy = Enemy("square", "brown", 300, 500)
+enemy = Enemy("square", "brown", -150, -150)
 # Create Player
-player = Player("triangle", "white", -game.SCREEN_WIDTH / 2 , game.SCREEN_HEIGHT / 2 -1000)
+player = Player("triangle", "white", 0 , 0)
+#player = Player("triangle", "white", -game.SCREEN_WIDTH / 2 , game.SCREEN_HEIGHT / 2 -1000)
 
 # Create Labels
 
@@ -208,10 +222,10 @@ game.set_keyboard_binding(spgl.KEY_DOWN, player.decelerate)
 
 game.set_keyboard_binding(spgl.KEY_LEFT, player.rotate_left)
 game.set_keyboard_binding(spgl.KEY_RIGHT, player.rotate_right)
-game.set_keyboard_binding(spgl.KEY_C, player.change_course)
+#game.set_keyboard_binding(spgl.KEY_C, player.change_course)
 game.set_keyboard_binding(spgl.KEY_R, player.set_rudder)
 game.set_keyboard_binding(spgl.KEY_A, player.set_amidshps)
-#game.set_keyboard_binding(spgl.KEY_S, player.set_course)
+game.set_keyboard_binding(spgl.KEY_S, player.desired_speed)
 
 
 game.set_keyboard_binding(spgl.KEY_U, player.depth_up)
@@ -222,19 +236,42 @@ game.set_keyboard_binding(spgl.KEY_ESCAPE, game.exit)
 while True:
     # Call the game tick method
     game.tick()
+    # player.desired_knots()
+    # player.change_course()
 
-    player.change_course()
 
-    speed_string2 = str(player.speed)
+    vx = enemy.xcor() - player.xcor()
+    if vx == 0:
+        vx = 0.01
+    vy = enemy.ycor() - player.ycor()
+
+    distance = int(math.sqrt((vx**2) + (vy**2)))
+    target_angle = int(math.atan2(vx, vy) * 180 / math.pi)
+
+    angle_deg = math.degrees(target_angle)
+    target_angle = int((angle_deg + 360) % 360)
+
+
+    print (target_angle)
+
+
+    if distance > 150:
+        enemy.color('yellow')
+        pass
+
+
+    speed_string2 = int(player.speed)
     heading_string = int(player.heading)
     enemy_speed_string = str(enemy.speed)
     enemy_heading = int(enemy.heading)
     rudder = int(player.rudder)
+    desired = int(player.desired_speed)
 
     navigation_label.update(" Current:  \n Depth:{} \n Speed:{} \n Heading:{} \n Rudder:{} "
                             .format(Player.depth, speed_string2, heading_string, rudder))
-    tracking_label.update(" Contact Data: \n Depth:{} \n Speed:{} \n Heading:{}"
-                        .format(Enemy.depth, enemy_speed_string, enemy_heading))
+    tracking_label.update(" Contact Data: \n Depth:{} \n Speed:{} \n Heading:{} \n Desired {} \n Distance {} \n "
+                          "Bearing {} \n "
+                        .format(Enemy.depth, enemy_speed_string, enemy_heading, desired, distance, target_angle))
 
 # show game info in terminal
 
