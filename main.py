@@ -3,11 +3,10 @@
 # SPGL Documentation on Github: https://wynand1004.github.io/SPGL
 # Use this as the starting point for your own games
 
-# Import SPGL
-import spgl
 import math
 import random
-import time
+import spgl
+import numpy as np
 
 rudder_multiplier = 4
 # Create Classes
@@ -201,7 +200,7 @@ desired = Player.desired_speed
 
 # Create Sprites
 # Create Enemy
-enemy = Enemy("square", "brown", -150, -150)
+enemy = Enemy("square", "brown", 0, 0)
 # Create Player
 player = Player("triangle", "white", 0 , 0)
 #player = Player("triangle", "white", -game.SCREEN_WIDTH / 2 , game.SCREEN_HEIGHT / 2 -1000)
@@ -236,26 +235,30 @@ game.set_keyboard_binding(spgl.KEY_ESCAPE, game.exit)
 while True:
     # Call the game tick method
     game.tick()
-    # player.desired_knots()
-    # player.change_course()
+
+    # Calculate the distance between two objects need to put this in a function
+    # def contact_range(contact.xcor, player.xcor):
+       # vx = enemy.xcor() - player.xcor()
+        #if vx == 0:
+            #vx = 0.01
+        #vy = enemy.ycor() - player.ycor()
+        #distance = int(math.sqrt((vx ** 2) + (vy ** 2)))
 
     vx = enemy.xcor() - player.xcor()
     if vx == 0:
         vx = 0.01
     vy = enemy.ycor() - player.ycor()
-
     distance = int(math.sqrt((vx**2) + (vy**2)))
-    target_angle = int(math.atan2(vx, vy) * 180 / math.pi)
 
-    angle_deg = math.degrees(target_angle)
-    target_angle = int((angle_deg + 360) % 360)
-
-
-    print (target_angle)
+    # Calculate the bearing of target from player
+    myradians = math.atan2(vy, vx) - math.pi/2
+    target_bearing = int(abs(math.degrees(myradians)))
+    print (myradians ,target_bearing)
 
 
-    if distance > 150:
-        enemy.color('yellow')
+
+    if distance > 1200:
+        enemy.color('blue')
         pass
 
 
@@ -270,7 +273,7 @@ while True:
                             .format(Player.depth, speed_string2, heading_string, rudder))
     tracking_label.update(" Contact Data: \n Depth:{} \n Speed:{} \n Heading:{} \n Desired {} \n Distance {} \n "
                           "Bearing {} \n "
-                        .format(Enemy.depth, enemy_speed_string, enemy_heading, desired, distance, target_angle))
+                        .format(Enemy.depth, enemy_speed_string, enemy_heading, desired, distance, target_bearing))
 
 # show game info in terminal
 
