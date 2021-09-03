@@ -5,6 +5,7 @@
 
 import math
 import random
+from turtle import towards
 import spgl
 import numpy as np
 
@@ -191,7 +192,7 @@ class Enemy(spgl.Sprite):
 
 
 # Initial Game setup
-game = spgl.Game(2500, 1200, "black", "SPGL Minimum Code Example by /u/wynand1004 AKA @TokyoEdTech",splash_time=3)
+game = spgl.Game(800, 600, "black", "SPGL Minimum Code Example by /u/wynand1004 AKA @TokyoEdTech",splash_time=3)
 heading = Player.heading
 depth = Player.depth
 enemy_heading = Enemy.heading
@@ -221,7 +222,7 @@ game.set_keyboard_binding(spgl.KEY_DOWN, player.decelerate)
 
 game.set_keyboard_binding(spgl.KEY_LEFT, player.rotate_left)
 game.set_keyboard_binding(spgl.KEY_RIGHT, player.rotate_right)
-#game.set_keyboard_binding(spgl.KEY_C, player.change_course)
+game.set_keyboard_binding(spgl.KEY_C, player.change_course)
 game.set_keyboard_binding(spgl.KEY_R, player.set_rudder)
 game.set_keyboard_binding(spgl.KEY_A, player.set_amidshps)
 game.set_keyboard_binding(spgl.KEY_S, player.desired_speed)
@@ -251,11 +252,13 @@ while True:
     distance = int(math.sqrt((vx**2) + (vy**2)))
 
     # Calculate the bearing of target from player
+    # Problems when ship in SE quadrant bearing way out
+    
     myradians = math.atan2(vy, vx) - math.pi/2
-    target_bearing = int(abs(math.degrees(myradians)))
+    
+    #target_bearing = int(abs(math.degrees(myradians)))
+    target_bearing = towards(vx,vy)
     print (myradians ,target_bearing)
-
-
 
     if distance > 1200:
         enemy.color('blue')
